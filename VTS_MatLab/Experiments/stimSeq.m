@@ -36,7 +36,7 @@ if mod(nrOutputs, reversals) == 0
             
             % send signal through serial port if available
             if serialport ~= 0 
-                fprintf(serialport, '%c', i);
+                fprintf(serialport, '%c', 10 + i);
             end
             % stimulate
             session.startForeground;
@@ -54,7 +54,7 @@ if mod(nrOutputs, reversals) == 0
             
             % send signal through serial port if available
             if serialport ~= 0
-                fprintf(serialport, '%c', reps - i);
+                fprintf(serialport, '%c', 10 + reps - i);
             end
             % stimulate
             session.startForeground;

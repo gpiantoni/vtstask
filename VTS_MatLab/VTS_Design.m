@@ -10,7 +10,7 @@ daq2 = 'cDAQ1mod2';
 %Create output signal
 s.DurationInSeconds = 1;  % duration of stimulus in seconds
 Amplitude = 1; %TODO: Find out what the output amplitude is (in voltage)
-Frequency = 40 ; %Hz
+Frequency = 30 ; %Hz
 values = linspace(0,2*pi * Frequency *s.DurationInSeconds,...
     s.DurationInSeconds*1000)';
 outputSignal = Amplitude.*sin(values);

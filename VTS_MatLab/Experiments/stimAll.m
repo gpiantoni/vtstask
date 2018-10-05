@@ -21,12 +21,12 @@ queueOutputData(session, repmat(signals, 1, 1));
 disp('stimulating all');
 
 if serialport ~= 0
-    fprintf(serialport, '%c', 110);
+    fprintf(serialport, '%c', 10);
 end
 
 session.startForeground;
 
 if serialport ~= 0
-    fprintf(serialport, '%c', 111);
+    fprintf(serialport, '%c', 150);
 end
 

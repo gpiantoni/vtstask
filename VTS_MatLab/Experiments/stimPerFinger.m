@@ -36,7 +36,7 @@ if mod(nrOutputs, fingers)==0
         
         % send signal through serial port if available
         if serialport ~= 0
-            fprintf(serialport, '%c', 20 + i);
+            fprintf(serialport, '%c', 30 + i);
         end
         % stimulate
         session.startForeground;
@@ -59,7 +59,7 @@ if mod(nrOutputs, fingers)==0
         
         % send signal through serial port if available
         if serialport ~= 0
-            fprintf(serialport, '%c', 20 + i);
+            fprintf(serialport, '%c', 30 + i);
         end
         % stimulate
         session.startForeground;
