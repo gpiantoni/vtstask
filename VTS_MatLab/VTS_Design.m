@@ -1,16 +1,16 @@
 devices = daq.getDevices;  % register DAQ devices
 
 s = daq.createSession('ni'); % Create session with NI devices
-nrOutputs = 5;
+nrOutputs = 10;
 fingers = 5;
 PORT = "COM5";
 daq1 = 'cDAQ1mod1';
 daq2 = 'cDAQ1mod2';
 
 %Create output signal
-s.DurationInSeconds = .2;  % duration of stimulus in seconds
+s.DurationInSeconds = 1;  % duration of stimulus in seconds
 Amplitude = 1; %TODO: Find out what the output amplitude is (in voltage)
-Frequency = 30 ; %Hz
+Frequency = 40 ; %Hz
 values = linspace(0,2*pi * Frequency *s.DurationInSeconds,...
     s.DurationInSeconds*1000)';
 outputSignal = Amplitude.*sin(values);
@@ -38,9 +38,11 @@ catch ME
     sp =0;
 end
 
+pause(15);
+
 % Start experiments
 try
-    randomMeasurements = [1, 1, 1];
+    randomMeasurements = [1, 1, 1, 1];
     for i = 1:length(randomMeasurements)
         disp('stimAll: ')
         stimAll(s, outputSignal, nrOutputs, sp)

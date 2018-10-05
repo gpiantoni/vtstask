@@ -41,7 +41,7 @@ if mod(nrOutputs, reversals) == 0
             % stimulate
             session.startForeground;
             if serialport ~= 0
-                fprintf(serialport, '%c', 41);
+                fprintf(serialport, '%c', 150);
             end
             pause(pTime);
         end
@@ -59,7 +59,7 @@ if mod(nrOutputs, reversals) == 0
             % stimulate
             session.startForeground;
             if serialport ~= 0
-                fprintf(serialport, '%c', 41);
+                fprintf(serialport, '%c', 150);
             end
             pause(pTime);
         end
