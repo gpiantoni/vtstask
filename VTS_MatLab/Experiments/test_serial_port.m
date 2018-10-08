@@ -4,9 +4,12 @@ function test_serial_port()
 s = serial('COM5');
 fopen(s);
 
-while 1
-    fprintf(s, '%c', 100);
-    pause(0.5)
+try
+    while 1
+        fprintf(s, '%c', 100);
+        pause(0.5)
+    end
+catch ME
+    fclose(s);
 end
-
 fclose(s);
