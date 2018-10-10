@@ -50,7 +50,7 @@ if mod(nrOutputs, reversals) == 0
             allOutputs = zeros(lenOutSig, nrOutputs);
             allOutputs(:, reps - i) = outputSignal;
             queueOutputData(session, repmat(allOutputs, 1, 1));
-            disp(strcat('stimulator nr. ', int2str(i+1)));
+            disp(strcat('stimulator nr. ', int2str(reps-i)));
             
             % send signal through serial port if available
             if serialport ~= 0

@@ -40,23 +40,28 @@ catch ME
     warning('no serial port found. sp set to 0');
     sp =0;
 end
-w = waitforbuttonpress;
+
+
 % Start experiments
 try
-    for i = 1:length(hrf_onsets)
-        disp('stimAll: ')
+    for i = 2:length(hrf_onsets)
+        disp(hrf_onsets(i)-hrf_onsets(i-1))
+        pause(hrf_onsets(i) - hrf_onsets(i-1));
+        disp(strcat('stimAll: run', string(i)))
         stimAll(s, outputSignal, nrOutputs, sp)
-        pause(hrf_onsets(i));
     end
-
-    disp('stimPerFinger:')
-    stimPerFinger(s, outputSignal, nrOutputs, sp, fingers);
-
-    disp('stimSeq:')
-    stimSeq(s, outputSignal, nrOutputs, sp, fingers);
     
-    disp('stimWithin:')
-    stimWithin(s, outputSignal, nrOutputs, sp, fingers);
+    pause(5)  % 5 second pause between conditions
+    
+%     disp('stimPerFinger:')
+%     stimPerFinger(s, outputSignal, nrOutputs, sp, fingers);
+
+    for i = 1:7
+        disp(strcat('stimSeq: run', string(i)))
+        stimSeq(s, outputSignal, nrOutputs, sp, fingers, 1);
+    end
+%     disp('stimWithin:')
+%     stimWithin(s, outputSignal, nrOutputs, sp, fingers);
     
     % Close serial port
     if sp ~= 0
