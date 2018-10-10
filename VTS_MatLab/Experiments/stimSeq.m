@@ -8,18 +8,18 @@ function stimSeq(session, outputSignal, nrOutputs, serialport, reversals, pTime)
 % - reversals: At what point stimulators should vibrate in reverse order
 %   (should be a divisor of the nrOutput), will probably be equal to
 %   fingers
-% - pTime: Pause between stimulation
+% - pTime: Pause between stimulation (default= 200 ms)
 
 switch nargin
     case 3
         serialport = 0;
         reversals = nrOutputs;
-        pTime = 0;
+        pTime = .2;
     case 4
         reversals = nrOutputs;
-        pTime = 0;
+        pTime = .2;
     case 5
-        pTime = 0;
+        pTime = .2;
 end
 
 lenOutSig = length(outputSignal);

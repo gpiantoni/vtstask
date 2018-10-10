@@ -1,7 +1,7 @@
 devices = daq.getDevices;  % register DAQ devices
 
 s = daq.createSession('ni'); % Create session with NI devices
-nrOutputs = 10;
+nrOutputs = 5;
 fingers = 5;
 PORT = "COM5";
 daq1 = 'cDAQ1mod1';
@@ -20,6 +20,9 @@ outputSignal = Amplitude.*sin(values);
 %addChannels(s, nrOutputs, daq1)
 addChannels(s, nrOutputs, daq2);
 
+%% add excel file for onsets
+
+hrf_onsets = xlsread('hrf_onsets.xlsx');
 %% Stimulate the piezo stimulators
 % stimAll stimulates all the stimulators at once 
 % stimPerFinger stimulates all stimulators per finger
@@ -37,16 +40,13 @@ catch ME
     warning('no serial port found. sp set to 0');
     sp =0;
 end
-
-pause(15);
-
+w = waitforbuttonpress;
 % Start experiments
 try
-    randomMeasurements = [1, 1, 1, 1];
-    for i = 1:length(randomMeasurements)
+    for i = 1:length(hrf_onsets)
         disp('stimAll: ')
         stimAll(s, outputSignal, nrOutputs, sp)
-        pause(randomMeasurements(i));
+        pause(hrf_onsets(i));
     end
 
     disp('stimPerFinger:')

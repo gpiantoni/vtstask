@@ -6,17 +6,18 @@ function stimWithin(session, outputSignal, nrOutputs, serialport, fingers, pTime
 % - nrOutput: Number of stimulators
 % - serialport: Serial port
 % - fingers: Number of fingers to be stimulated (default=5)
+% - pTime: Pause between stimulation (default= 200 ms)
 
 switch nargin
     case 3
         serialport = 0;
         fingers = 5;
-        pTime = 0;
+        pTime = .2;
     case 4
         fingers = 5;
-        pTime = 0;
+        pTime = .2;
     case 5
-        pTime = 0;
+        pTime = .2;
 end
 
 lenOutSig = length(outputSignal);
