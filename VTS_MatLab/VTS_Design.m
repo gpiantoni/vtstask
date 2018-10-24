@@ -22,7 +22,12 @@ addChannels(s, nrOutputs, daq2);
 
 %% add excel file for onsets
 
-hrf_onsets = xlsread('hrf_onsets.xlsx');
+%hrf_onsets = xlsread('hrf_onsets.xlsx');
+
+% Onsets based on hrf_pattern
+hrf_tsv = tdfread('sub-V7818_ses-UMC-7T_task-hrfpattern_run-1_20180306T170321.tsv');
+hrf_onsets = hrf_tsv.onset;
+
 %% Stimulate the piezo stimulators
 % stimAll stimulates all the stimulators at once 
 % stimPerFinger stimulates all stimulators per finger
