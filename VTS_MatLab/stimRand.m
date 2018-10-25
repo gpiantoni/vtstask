@@ -36,5 +36,6 @@ for i = 1: length(randomlist)
     if serialport ~= 0
         fprintf(serialport, '%c', 150);
     end
+    disp(strcat('pause:',{' '}, num2str(pTime), {' '}, 'second(s)'));
     pause(pTime);
 end
