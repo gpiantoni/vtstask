@@ -13,7 +13,7 @@ daq1 = 'cDAQ1mod1';
 daq2 = 'cDAQ1mod2';
 
 %Create output signal
-s.DurationInSeconds = 1;  % duration of stimulus in seconds
+s.DurationInSeconds = .2;  % duration of stimulus in seconds
 Amplitude = 1; %TODO: Find out what the output amplitude is (in voltage)
 Frequency = 30 ; %Hz
 values = linspace(0,2*pi * Frequency *s.DurationInSeconds,...
@@ -45,8 +45,8 @@ hrf_onsets = [0 1 2];
 % --- Open serial ports if available ---
 try
     sp_out = serial(PORT_OUT);
-    disp(strcat('opening serial port:', {' '}, PORT_OUT));
     fopen(sp_out);
+    disp(strcat('opening serial port:', {' '}, PORT_OUT));
 catch ME
     warning('no output serial port found. output serial port set to 0');
     sp_out = 0;
@@ -54,8 +54,8 @@ end
 
 try
     sp_in = serial(PORT_IN);
-    disp(strcat('opening serial port:', {' '}, PORT_IN));
     fopen(sp_in);
+    disp(strcat('opening serial port:', {' '}, PORT_IN));
 catch ME
     warning('no input serial port found. input serial port set to 0');
     sp_in = 0;
@@ -71,9 +71,9 @@ try
     
     prev = 0;
     for i = 1:length(hrf_onsets)
-        disp(hrf_onsets(i)-prev)
+        disp(strcat('pause:',{' '}, num2str(hrf_onsets(i)-prev), {' '}, 'second(s)'));
         pause(hrf_onsets(i) - prev);
-        disp(strcat('stimAll: run', string(i)))
+        disp(strcat('stimAll: run ', string(i)))
         stimAll(s, outputSignal, nrOutputs, sp_out)
         prev = hrf_onsets(i);
     end
@@ -109,9 +109,14 @@ try
         fmri_trigger(sp_in, 'Start stimulating outputs at random')
     end
     
-    randomlist = 
-    for i = 1:2
-        stimRand(s, outputSignal, nrOutputs, sp_out, .8);
+    % read file with randomised stimulations
+    randFile = fopen('randomlist_5_fingers.txt');
+    randcell = textscan(randFile, '%d');
+    randomlist = cell2mat(randcell);
+    fclose(randFile);
+
+    for i = 1:1
+        stimRand(s, outputSignal, nrOutputs, sp_out, .8, randomlist);
     end
     
     % --- Close serial ports ---
