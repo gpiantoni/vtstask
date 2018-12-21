@@ -1,4 +1,4 @@
-function [randomlist] = stimRand(session, outputSignal, nrOutputs, serialport, pTime, randomlist)
+function [timeElapsed] = stimRand(session, outputSignal, nrOutputs, serialport, pTime, randomlist)
 % Function that stimulates the outputs in sequence
 % 
 % - session: DAQ session
@@ -20,6 +20,7 @@ switch nargin
 end
 
 lenOutSig = length(outputSignal);
+timeElapsed = [];
 
 for i = 1: length(randomlist)
     allOutputs = zeros(lenOutSig, nrOutputs);
@@ -33,9 +34,13 @@ for i = 1: length(randomlist)
     end
     % stimulate
     session.startForeground;
+    timeElapsed = [timeElapsed toc];
+    
     if serialport ~= 0
         fprintf(serialport, '%c', 150);
     end
-    disp(strcat('pause:',{' '}, num2str(pTime), {' '}, 'second(s)'));
-    pause(pTime);
+    if i ~= length(randomlist)
+        disp(strcat('pause:',{' '}, num2str(pTime), {' '}, 'second(s)'));
+        pause(pTime);   
+    end
 end
