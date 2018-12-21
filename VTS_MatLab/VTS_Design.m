@@ -1,24 +1,33 @@
-devices = daq.getDevices;  % register DAQ devices
+clear
 
+devices = daq.getDevices;  % register DAQ devices
 s = daq.createSession('ni'); % Create session with NI devices
 nrOutputs = 5;
 fingers = 5;
+restdur = 14.4;  
+pTime = 7;
 
 % serial ports
 PORT_OUT = "COM5";
-PORT_IN = "COM7";
+PORT_IN = "COM9";
 
 % DAQ devices
 daq1 = 'cDAQ1mod1';
 daq2 = 'cDAQ1mod2';
 
 %Create output signal
-s.DurationInSeconds = .2;  % duration of stimulus in seconds
+% s.DurationInSeconds = 1.6;  % duration of stimulus in seconds
 Amplitude = 1; %TODO: Find out what the output amplitude is (in voltage)
 Frequency = 30 ; %Hz
-values = linspace(0,2*pi * Frequency *s.DurationInSeconds,...
-    s.DurationInSeconds*1000)';
-outputSignal = Amplitude.*sin(values);
+Stimulation = 2;
+onset = [10, 15, 20, 25];
+randlist = [1,3,5,2,4;4,2,5,3,1];
+% outputSignal = createOutputSignal(Frequency, Amplitude, Stimulation);
+signal = createSignal(Frequency, Amplitude, Stimulation);
+
+seqmat = createStimSeqMat(nrOutputs, signal, 2, restdur, pTime);
+stimAllMat = createStimAllMat(nrOutputs, signal, onset);
+randmat = createStimRandMat(nrOutputs, signal, randlist, restdur, pTime);
 
 %% add all the channels to the session
 
@@ -30,19 +39,11 @@ addChannels(s, nrOutputs, daq2);
 %hrf_onsets = xlsread('hrf_onsets.xlsx');
 
 % --- Onsets based on hrf_pattern ---
-% hrf_tsv = tdfread('sub-V7818_ses-UMC-7T_task-hrfpattern_run-1_20180306T170321.tsv');
-% hrf_onsets =  hrf_tsv.onset;
-hrf_onsets = [0 1 2];
+hrf_tsv = tdfread('sub-V7818_ses-UMC-7T_task-hrfpattern_run-1_20180306T170321.tsv');
+hrf_onsets =  hrf_tsv.onset;
+% hrf_onsets = [3 ];
 
-%% Stimulate the piezo stimulators
-% stimAll stimulates all the stimulators at once 
-% stimPerFinger stimulates all stimulators per finger
-% stimSeq stimulates the stimulators in sequence
-% stimWithin stimulates the stimulators in sequence per finger
-%For more info: $help METHODNAME 
-% 
-
-% --- Open serial ports if available ---
+%% --- Open serial ports if available ---
 try
     sp_out = serial(PORT_OUT);
     fopen(sp_out);
@@ -56,47 +57,72 @@ try
     sp_in = serial(PORT_IN);
     fopen(sp_in);
     disp(strcat('opening serial port:', {' '}, PORT_IN));
+    sp_in.Timeout = 60;
 catch ME
     warning('no input serial port found. input serial port set to 0');
     sp_in = 0;
 end
 
-%% Start experiments
 try
     
     % --- stimulate all ---
+    
+%     queueOutputData(s, stimAllMat)
+%     if sp_in ~=0
+%         fmri_trigger(sp_in, 'Start stimulating all outputs')
+%     end
+%     
+%     s.startForeground
+%     
+%     if sp_in ~=0
+%         fmri_trigger(sp_in, 'End of stimulation')
+%     end
+    
+%     tic
+%     running = 1;
+%     i = 1;
+%     prev = 0;
+%     disp(strcat('pause:',{' '}, num2str(hrf_onsets(i)), {' '}, 'second(s)'));
+%     
+%     while running
+%         if round(toc, 4) == round(hrf_onsets(i), 4)
+%             toc
+%             disp(strcat('stimAll: run ',{' '}, string(i)))
+%             prev = hrf_onsets(i);
+%             stimAll(s, outputSignal, nrOutputs, sp_out);
+%             if i == length(hrf_onsets)
+%                 disp('end of stimulate all experiment')
+%                 break
+%             end
+%             i = i + 1;
+%             disp(strcat('pause:',{' '}, num2str(hrf_onsets(i) - prev), {' '}, 'second(s)'));
+%         end
+%     end
+%     
+
+    %% --- stimulate sequential ---
+    queueOutputData(s, seqmat)
     if sp_in ~=0
         fmri_trigger(sp_in, 'Start stimulating all outputs')
     end
     
-    prev = 0;
-    for i = 1:length(hrf_onsets)
-        disp(strcat('pause:',{' '}, num2str(hrf_onsets(i)-prev), {' '}, 'second(s)'));
-        pause(hrf_onsets(i) - prev);
-        disp(strcat('stimAll: run ', string(i)))
-        stimAll(s, outputSignal, nrOutputs, sp_out)
-        prev = hrf_onsets(i);
-    end
+    s.startForeground
     
-    % --- stimulate per finger ---
-%     if sp_in ~=0
-%         fmri_trigger(sp_in, 'Start stimulating outputs per finger')
-%     end
-%     
-%     disp('stimPerFinger:')
-%     stimPerFinger(s, outputSignal, nrOutputs, sp_out, fingers);
+    if sp_in ~=0
+        fmri_trigger(sp_in, 'End of stimulation')
+    end
 
-    % --- stimilate sequential ---
-%     if sp_in ~=0
-%         fmri_trigger(sp_in, 'Start stimulating outputs in sequence')
+%     reversed = false;
+%     for i = 1:8
+%         tic
+%         disp(strcat('stimulate in sequence, run ',{' '}, string(i)))
+%         stimSeqSW(s, outputSignal, nrOutputs, reversed, restdur, pTime);
+%         reversed = ~reversed;
 %     end
-
-%     for i = 1:7
-%         disp(strcat('stimSeq: run', string(i)))
-%         stimSeq(s, outputSignal, nrOutputs, sp_out, fingers, 1);
-%     end
-
-    % --- stimulate within finger --- 
+%     disp('end of stimulate in sequence experiment')
+%     disp(toc(seq_timer))
+    
+    %% --- stimulate within finger --- 
 %     if sp_in ~=0
 %         fmri_trigger(sp_in, 'Start stimulating outputs within finger')
 %     end
@@ -104,21 +130,38 @@ try
 %     disp('stimWithin:')
 %     stimWithin(s, outputSignal, nrOutputs, sp_out, fingers);
     
-    % --- stimulate random ---
+    %% --- stimulate random ---
+    
+    queueOutputData(s, randmat)
     if sp_in ~=0
-        fmri_trigger(sp_in, 'Start stimulating outputs at random')
+        fmri_trigger(sp_in, 'Start stimulating all outputs')
     end
     
-    % read file with randomised stimulations
-    randFile = fopen('randomlist_5_fingers.txt');
-    randcell = textscan(randFile, '%d');
-    randomlist = cell2mat(randcell);
-    fclose(randFile);
-
-    for i = 1:1
-        stimRand(s, outputSignal, nrOutputs, sp_out, .8, randomlist);
-    end
+    s.startForeground
     
+    if sp_in ~=0
+        fmri_trigger(sp_in, 'End of stimulation')
+    end
+%     if sp_in ~=0
+%         fmri_trigger(sp_in, 'Start stimulating outputs at random')
+%     end
+%     rand_timer = tic;
+%     read file with randomised stimulations
+%     randFile = fopen('randomlist_5_fingers.txt');
+%     randcell = textscan(randFile, '%d');
+%     randomlist = cell2mat(randcell);
+%     fclose(randFile);
+%     
+%     randlength = length(randomlist)/fingers;
+%     orderlist = transpose(reshape(randomlist, [5,8]));
+%     
+%     for i = 1:randlength
+%         disp(strcat('stimulate random, run ',{' '}, string(i)))
+%         order = orderlist(i,:);
+%         stimRandSW(s, outputSignal, nrOutputs, order, restdur, pTime, sp_out);
+%     end
+%     disp('end of stimulate random experiment')
+%     toc(rand_timer)
     % --- Close serial ports ---
     
     if sp_out ~= 0
@@ -143,5 +186,9 @@ catch ME
     end
 end
 
-        
-
+% function outputSignal = createOutputSignal(frequency, amplitude, duration)
+% 
+% values = linspace(0,2*pi * frequency *duration,...
+%     duration*1000)';
+% outputSignal = amplitude.*sin(values);
+% end
