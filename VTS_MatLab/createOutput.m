@@ -1,4 +1,4 @@
-function output = createOutput(frequency, amplitude, pTime, signalTime, reps)
+function output = createOutput(frequency, amplitude, signalTime, pTime, reps)
 
 switch nargin
     case 4
