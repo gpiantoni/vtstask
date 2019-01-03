@@ -37,8 +37,8 @@ for rep = 1:reps
         for finger = 1:nrOutputs
             before = (finger-1)*pTime;
             after = (nrOutputs-finger)*pTime;
-            tbs = zeros(before*1000,1);
-            tas = zeros(after*1000, 1);
+            tbs = zeros(int64(before*1000),1);
+            tas = zeros(int64(after*1000), 1);
             sigVector = [rest;tbs;signal;tas];
             allSignals = [allSignals sigVector];
         end
@@ -49,8 +49,8 @@ for rep = 1:reps
         for finger = 1:nrOutputs
             before = (nrOutputs-finger)*pTime;
             after = (finger-1)*pTime;
-            tbs = zeros(before*1000, 1);
-            tas = zeros(after*1000, 1);
+            tbs = zeros(int64(before*1000),1);
+            tas = zeros(int64(after*1000), 1);
             sigVector = [rest;tbs;signal;tas];
             allSignalsRev = [allSignalsRev sigVector];
         end

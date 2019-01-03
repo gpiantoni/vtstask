@@ -31,8 +31,8 @@ for rep = 1:reps
         pos = find(order==output);
         before = (pos-1)*pTime;
         after = (5-pos)*pTime;
-        tbs = zeros(before*1000,1);
-        tas = zeros(after*1000, 1);
+        tbs = zeros(int64(before*1000),1);
+        tas = zeros(int64(after*1000), 1);
         sigVector = [rest;tbs;signal;tas];
         allSignals = [allSignals sigVector];
     end
