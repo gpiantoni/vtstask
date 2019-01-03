@@ -83,7 +83,7 @@ try
     s.startBackground
     logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
     if sp_in ~=0
-        fmri_trigger(sp_in, logfile, 'End of stimulation')
+        fmri_trigger(sp_in, logfile, 'End of stimulating all outputs')
         stop(s);
     end
     %% --- stimulate sequential ---
@@ -106,7 +106,7 @@ try
     logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
     
     if sp_in ~=0
-        fmri_trigger(sp_in, logfile, 'End of stimulation');
+        fmri_trigger(sp_in, logfile, 'End of stimulating ouputs in sequence');
         stop(s);
     end
     %% --- stimulate random ---
@@ -126,7 +126,7 @@ try
     logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
     
     if sp_in ~=0
-        fmri_trigger(sp_in, logfile, 'End of stimulation')
+        fmri_trigger(sp_in, logfile, 'End of stimulating outputs in random order')
         stop(s);
     end
     
@@ -144,7 +144,6 @@ try
     fclose(logfile);
     
 catch e
-    fprintf(2, e.message);
     if sp_out ~= 0
         fclose(sp_out);
         disp(strcat('closing serial port:',{' '}, PORT_OUT));
@@ -155,6 +154,7 @@ catch e
         disp(strcat('closing serial port:',{' '}, PORT_IN));
     end
     fclose(logfile);
+    fprintf(2, e.message);
 end
 
 function logvars(logfile, nrOutputs, amplitude, frequency, stimdur, restdur, pTime, reps)
