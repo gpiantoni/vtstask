@@ -1,11 +1,12 @@
 clear
+subject = 'test_1';
+logdir = 'C:\Users\mthio.LA020080\Documents\GitHub\vtstask\logfiles\';
+logfile = fopen(strcat(logdir, 'log_subject_', subject, '.txt'), 'w');
+logger(logfile, char(strcat('Initiate logging for subject', {' '}, subject))); 
 
 devices = daq.getDevices;  % register DAQ devices
 s = daq.createSession('ni'); % Create session with NI devices
-nrOutputs = 5;
-fingers = 5;
-restdur = 14.4;  
-pTime = 7;
+
 
 % serial ports
 PORT_OUT = "COM5";
@@ -15,33 +16,33 @@ PORT_IN = "COM9";
 daq1 = 'cDAQ1mod1';
 daq2 = 'cDAQ1mod2';
 
-%Create output signal
-% s.DurationInSeconds = 1.6;  % duration of stimulus in seconds
-Amplitude = 1; %TODO: Find out what the output amplitude is (in voltage)
-Frequency = 30 ; %Hz
-Stimulation = 2;
-onset = [10, 15, 20, 25];
-randlist = [1,3,5,2,4;4,2,5,3,1];
-% outputSignal = createOutputSignal(Frequency, Amplitude, Stimulation);
-signal = createSignal(Frequency, Amplitude, Stimulation);
+% Create output signal
+nrOutputs = 5;
+amplitude = 1; %TODO: Find out what the output amplitude is (in voltage)
+frequency = 30 ; %Hz
 
-seqmat = createStimSeqMat(nrOutputs, signal, 2, restdur, pTime);
-stimAllMat = createStimAllMat(nrOutputs, signal, onset);
-randmat = createStimRandMat(nrOutputs, signal, randlist, restdur, pTime);
+% --- Onsets based on hrf_pattern ---
+hrf_filename = 'sub-V7818_ses-UMC-7T_task-hrfpattern_run-1_20180306T170321.tsv';
+hrf_tsv = tdfread(hrf_filename);
+hrf_onsets =  hrf_tsv.onset;
 
+% --- read file with randomised stimulations ---
+rand_filename = 'randomlist_5_fingers.txt';
+randFile = fopen(rand_filename);
+randcell = textscan(randFile, '%d');
+randomlist = cell2mat(randcell);
+fclose(randFile);
+randlength = length(randomlist)/nrOutputs;
+orderlist = transpose(reshape(randomlist, [nrOutputs,randlength]));
+
+%% log files
+fprintf(logfile, '\n%s: %s\n%s: %s\n\n',...
+    'hRF onsets file: ', hrf_filename, ...
+    'random stimulation filename: ', rand_filename); 
 %% add all the channels to the session
 
 %addChannels(s, nrOutputs, daq1)
 addChannels(s, nrOutputs, daq2);
-
-%% add excel file for onsets
-
-%hrf_onsets = xlsread('hrf_onsets.xlsx');
-
-% --- Onsets based on hrf_pattern ---
-hrf_tsv = tdfread('sub-V7818_ses-UMC-7T_task-hrfpattern_run-1_20180306T170321.tsv');
-hrf_onsets =  hrf_tsv.onset;
-% hrf_onsets = [3 ];
 
 %% --- Open serial ports if available ---
 try
@@ -57,111 +58,78 @@ try
     sp_in = serial(PORT_IN);
     fopen(sp_in);
     disp(strcat('opening serial port:', {' '}, PORT_IN));
-    sp_in.Timeout = 60;
+    sp_in.Timeout = 300;
 catch ME
     warning('no input serial port found. input serial port set to 0');
     sp_in = 0;
 end
 
+%% EXPERIMENTS
 try
     
     % --- stimulate all ---
+    stimdur = .4;
+    signal = createSignal(frequency, amplitude, stimdur);
+    logger(logfile, '\nINPUTS STIMULATE ALL', 0);
+    logvars(logfile, nrOutputs, amplitude, frequency, stimdur);
     
-%     queueOutputData(s, stimAllMat)
-%     if sp_in ~=0
-%         fmri_trigger(sp_in, 'Start stimulating all outputs')
-%     end
-%     
-%     s.startForeground
-%     
-%     if sp_in ~=0
-%         fmri_trigger(sp_in, 'End of stimulation')
-%     end
-    
-%     tic
-%     running = 1;
-%     i = 1;
-%     prev = 0;
-%     disp(strcat('pause:',{' '}, num2str(hrf_onsets(i)), {' '}, 'second(s)'));
-%     
-%     while running
-%         if round(toc, 4) == round(hrf_onsets(i), 4)
-%             toc
-%             disp(strcat('stimAll: run ',{' '}, string(i)))
-%             prev = hrf_onsets(i);
-%             stimAll(s, outputSignal, nrOutputs, sp_out);
-%             if i == length(hrf_onsets)
-%                 disp('end of stimulate all experiment')
-%                 break
-%             end
-%             i = i + 1;
-%             disp(strcat('pause:',{' '}, num2str(hrf_onsets(i) - prev), {' '}, 'second(s)'));
-%         end
-%     end
-%     
+    stimAllMat = createStimAllMat(nrOutputs, signal, hrf_onsets(1:1));
 
+    queueOutputData(s, stimAllMat)
+    if sp_in ~=0
+        fmri_trigger(sp_in, logfile, 'Start stimulating all outputs')
+    end
+    tic
+    s.startBackground
+    logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
+    if sp_in ~=0
+        fmri_trigger(sp_in, logfile, 'End of stimulation')
+        stop(s);
+    end
     %% --- stimulate sequential ---
+    restdur = 4.4;  
+    pTime = 1.6;
+    reps = 4;
+    seqmat = createStimSeqMat(nrOutputs, signal, reps, restdur, pTime);
+    
+    logger(logfile, 'INPUTS STIMULATE IN SEQUENCE', 0)
+    logvars(logfile, nrOutputs, amplitude, frequency, stimdur, restdur, pTime, reps);
+    
     queueOutputData(s, seqmat)
+   
     if sp_in ~=0
-        fmri_trigger(sp_in, 'Start stimulating all outputs')
+        fmri_trigger(sp_in, logfile, 'Start stimulating ouputs in sequence')
     end
     
-    s.startForeground
+    tic
+    s.startBackground
+    logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
     
     if sp_in ~=0
-        fmri_trigger(sp_in, 'End of stimulation')
+        fmri_trigger(sp_in, logfile, 'End of stimulation');
+        stop(s);
     end
-
-%     reversed = false;
-%     for i = 1:8
-%         tic
-%         disp(strcat('stimulate in sequence, run ',{' '}, string(i)))
-%         stimSeqSW(s, outputSignal, nrOutputs, reversed, restdur, pTime);
-%         reversed = ~reversed;
-%     end
-%     disp('end of stimulate in sequence experiment')
-%     disp(toc(seq_timer))
-    
-    %% --- stimulate within finger --- 
-%     if sp_in ~=0
-%         fmri_trigger(sp_in, 'Start stimulating outputs within finger')
-%     end
-%     
-%     disp('stimWithin:')
-%     stimWithin(s, outputSignal, nrOutputs, sp_out, fingers);
-    
     %% --- stimulate random ---
     
+    randmat = createStimRandMat(nrOutputs, signal, orderlist, restdur, pTime);
+    logger(logfile, 'INPUTS STIMULATE IN RANDOM ORDER', 0)
+    logvars(logfile, nrOutputs, amplitude, frequency, stimdur, restdur, pTime, reps);
+
     queueOutputData(s, randmat)
-    if sp_in ~=0
-        fmri_trigger(sp_in, 'Start stimulating all outputs')
-    end
-    
-    s.startForeground
     
     if sp_in ~=0
-        fmri_trigger(sp_in, 'End of stimulation')
+        fmri_trigger(sp_in, logfile, 'Start stimulating outputs in random order')
     end
-%     if sp_in ~=0
-%         fmri_trigger(sp_in, 'Start stimulating outputs at random')
-%     end
-%     rand_timer = tic;
-%     read file with randomised stimulations
-%     randFile = fopen('randomlist_5_fingers.txt');
-%     randcell = textscan(randFile, '%d');
-%     randomlist = cell2mat(randcell);
-%     fclose(randFile);
-%     
-%     randlength = length(randomlist)/fingers;
-%     orderlist = transpose(reshape(randomlist, [5,8]));
-%     
-%     for i = 1:randlength
-%         disp(strcat('stimulate random, run ',{' '}, string(i)))
-%         order = orderlist(i,:);
-%         stimRandSW(s, outputSignal, nrOutputs, order, restdur, pTime, sp_out);
-%     end
-%     disp('end of stimulate random experiment')
-%     toc(rand_timer)
+    
+    tic
+    s.startBackground
+    logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
+    
+    if sp_in ~=0
+        fmri_trigger(sp_in, logfile, 'End of stimulation')
+        stop(s);
+    end
+    
     % --- Close serial ports ---
     
     if sp_out ~= 0
@@ -173,8 +141,10 @@ try
         fclose(sp_in);
         disp(strcat('closing serial port:',{' '}, PORT_IN));
     end
+    fclose(logfile);
     
-catch ME
+catch e
+    fprintf(2, e.message);
     if sp_out ~= 0
         fclose(sp_out);
         disp(strcat('closing serial port:',{' '}, PORT_OUT));
@@ -184,11 +154,24 @@ catch ME
         fclose(sp_in);
         disp(strcat('closing serial port:',{' '}, PORT_IN));
     end
+    fclose(logfile);
 end
 
-% function outputSignal = createOutputSignal(frequency, amplitude, duration)
-% 
-% values = linspace(0,2*pi * frequency *duration,...
-%     duration*1000)';
-% outputSignal = amplitude.*sin(values);
-% end
+function logvars(logfile, nrOutputs, amplitude, frequency, stimdur, restdur, pTime, reps)
+if nargin < 6
+    fprintf(logfile, '\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n\n',...
+        'number of outputs: ', nrOutputs,...
+        'amplitude: ', amplitude, ...
+        'frequency: ', frequency, ...
+        'duration of stimulation in seconds: ', stimdur);
+else
+    fprintf(logfile, '\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n\n',...
+        'number of outputs: ', nrOutputs,...
+        'amplitude: ', amplitude, ...
+        'frequency: ', frequency, ...
+        'duration of stimulation in seconds: ', stimdur, ...
+        'duration between blocks in seconds: ', restdur,...
+        'duration betweens stimulation in seconds: ', pTime,...
+        'number of repetitions: ', reps);
+end
+end
