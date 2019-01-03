@@ -6,9 +6,9 @@ switch nargin
 end
        
 output = [];
-rest = createNoSignal(restdur);
+rest =  zeros(restdur*1000, 1);
 stim = createSignal(frequency, amplitude, signalTime);
-pausetime = createNoSignal(pTime);
+pausetime = zeros(pTime*1000, 1);
 for rep = 1:reps
     output = [output;rest];
     for fing = 1:5
@@ -16,16 +16,4 @@ for rep = 1:reps
     end
 end
     
-end
-
-function signal = createSignal(frequency, amplitude, duration)
-
-values = linspace(0,2*pi * frequency *duration,...
-    duration*1000)';
-signal = amplitude.*sin(values);
-end
-
-function noSignal = createNoSignal(duration)
-
-noSignal = zeros(duration*1000, 1);
 end
