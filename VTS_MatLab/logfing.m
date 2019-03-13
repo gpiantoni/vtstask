@@ -1,16 +1,20 @@
-function logfing(logfile, orderlist, restdur, pTime)
+function logfing(logfile, orderlist, restdur, pTime, stimdur)
 tic
 switch nargin
-    case 5
+    case 2
         restdur = 14.4;
         pTime = 7;
-    case 6
+        stimdur = 4;
+    case 3
         pTime = 7;
+        stimdur = 4;
+    case 4
+        stimdur = 3;
 end
 timing = restdur;
 dims = size(orderlist);
 blocks = dims(1);
-logger(logfile, char(strcat('rest for', {' '}, num2str(restdur), {' '}, 'seconds')));
+logger(logfile, char(strcat('rest for', {' '}, num2str(restdur), {' '}, 'seconds'))); 
 
 for i = 1:blocks
     running = 1;
@@ -25,18 +29,20 @@ for i = 1:blocks
             else    
                 logger(logfile, char(strcat('STIMULATING OUTPUT', {' '}, num2str(order(output)),...
                     {': '}, num2str(round(toc, 2)), {' '},...
-                    'seconds after start of experiment, rest for', {' '}, num2str(pTime), {' '},...
+                    'seconds after start of experiment, next stimulation in', {' '}, num2str(pTime), {' '},...
                         'seconds')));
             end
             output = output + 1;
             if output <= length(order)
                 timing = timing + pTime;
             else 
-                timing = timing + restdur;
+                timing = timing + restdur + stimdur;
                 running = ~running;
                 if i == blocks
+                    pause(stimdur)
                     logger(logfile, char(strcat('end of block', {' '}, num2str(i))));
                 else
+                    pause(stimdur)
                     logger(logfile, char(strcat('end of block', {' '}, num2str(i),...
                         ', rest for', {' '}, num2str(restdur), {' '}, 'seconds')));
                 end
