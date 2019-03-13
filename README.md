@@ -6,17 +6,17 @@ It works through the following steps
 1. The main module is the VTS_Design.m module, in which the following parameters 
 will have to be specified:
 
-For the experiment:
-- devices: The NIDAQ devices used to control the stimulator
-- nrOutputs: number of stimulators used in the experiments
-- fingers: number of fingers the stimulators will be connected to
-- PORT: the serial port to get/send signals through. If not available it will 
-	also run just fine.
-- daq: specify the name of a single daq device
+	* For the experiment:
+	- devices: The NIDAQ devices used to control the stimulator
+	- nrOutputs: number of stimulators used in the experiments
+	- fingers: number of fingers the stimulators will be connected to
+	- PORT: the serial port to get/send signals through. If not available it will 
+		also run just fine.
+	- daq: specify the name of a single daq device
 
-For the logger:
-- subject: The name of the subject
-- logdir: Path to directory where log files should be saved.
+	* For the logger:
+	- subject: The name of the subject
+	- logdir: Path to directory where log files should be saved.
 
 2. For the signal to be sent to the stimulators you can set the following 
    parameters.
