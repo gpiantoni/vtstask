@@ -17,7 +17,8 @@ daq2 = 'cDAQ1mod2';
 
 %% Create output signal
 nrOutputs = 5;
-amplitude = 2; %TODO: Find out what the output amplitude is (in voltage)
+amplitude = 2;
+
 frequency = 30;
 frequency2 = 110; %Hz
 frequency3 = 190;
