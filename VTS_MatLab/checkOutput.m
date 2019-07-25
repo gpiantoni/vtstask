@@ -1,4 +1,4 @@
-function kladfunctie(signal)
+function checkOutput(signal)
 hold on
 dims = size(signal);
 fingers = dims(2);

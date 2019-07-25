@@ -1,4 +1,10 @@
 function stimAllMat = createStimAllMat(nrOutputs, signal, onsets, serialport)
+% Function that creates a stimulation matrix for the individual fingers
+% experiment. It requires the following parameters:
+% - nrOutputs = number of outputs that are used
+% - signal = the stimulation signal used in the experiment
+% - onsets = list describing the onsets of stimulations
+% - serialport = not yet used...
 
 switch nargin
     case 3

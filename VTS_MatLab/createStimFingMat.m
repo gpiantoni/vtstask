@@ -1,4 +1,15 @@
 function stimRandMat = createStimFingMat(nrOutputs, signal, orderlist, restDur, pTime, serialport)
+% Function that creates a stimulation matrix for the individual fingers
+% experiment. It requires the following parameters:
+% - nrOutputs = number of outputs that are used
+% - signal = the stimulation signal used in the experiment
+% - orderlist = list describing the order of finger stimulations
+% - restdur = rest time in seconds between blocks
+% - pTime = rest time in seconds between stimulations
+% - stimdur = duration of stimulation in seconds
+% - serialport = not used...
+% NOTE: This function can also be used to create a stimulation matrix where
+% the order is fixed, just load in such an order as the orderlist. 
 
 switch nargin
     case 3

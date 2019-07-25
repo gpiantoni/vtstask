@@ -1,15 +1,29 @@
-function logfing(logfile, orderlist, restdur, pTime, stimdur)
+function logfing(logfile, orderlist, restdur, pTime, stimdur, serialport)
+% Function that logs the timing of the individual finger experiment. It is
+% based on the internal stopwatch function, so not 100% accurate. You will
+% need the following parameters:
+% - logfile = path to logfile where the details should be logged to
+% - orderlist = list describing the order of finger stimulations
+% - restdur = rest time in seconds between blocks
+% - pTime = rest time in seconds between stimulations
+% - stimdur = duration of stimulation in seconds
+% - serialport = output serialport to send trigger when experiment is over.
+%                   No serialport is 0.
+
 tic
 switch nargin
     case 2
         restdur = 14.4;
         pTime = 7;
         stimdur = 4;
+        serialport = 0;
     case 3
         pTime = 7;
         stimdur = 4;
+        serialport = 0;
     case 4
         stimdur = 3;
+        serialport = 0;
 end
 timing = restdur;
 dims = size(orderlist);
@@ -23,10 +37,16 @@ for i = 1:blocks
     while running
         if round(toc, 2) == round(timing, 2)
             if output == length(order)
+                if serialport ~=0
+                   fprintf(serialport, '%c', num2str(order(output)));
+                end
                 logger(logfile, char(strcat('STIMULATING OUTPUT', {' '}, num2str(order(output)),...
                     {': '}, num2str(round(toc, 2)), {' '},...
                     'seconds after start of experiment')));
             else    
+                if serialport ~=0
+                   fprintf(serialport, '%c', num2str(order(output)));
+                end
                 logger(logfile, char(strcat('STIMULATING OUTPUT', {' '}, num2str(order(output)),...
                     {': '}, num2str(round(toc, 2)), {' '},...
                     'seconds after start of experiment, next stimulation in', {' '}, num2str(pTime), {' '},...
@@ -48,5 +68,8 @@ for i = 1:blocks
                 end
             end
         end
+    end
+    if serialport ~=0
+       fprintf(serialport, '%c', 30);
     end
 end

@@ -1,4 +1,5 @@
 function fmri_trigger(serialport, logfile, message)
+% Pauses the program until a trigger is received from the serialport.
 
 if nargin < 2 || ~ischar(message) 
     message = 'trigger';
