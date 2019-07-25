@@ -54,11 +54,14 @@ At the moment there are 4 experiments, with the last three being identical excep
 frequency. All experiments go through the same process:
 
 1. The logger indicates the experiment starts and logs all the variables used.
-2. The stimulation matrix is created using the signal created at the beginning of the program.
-   Subsequently, the signal is queued. 
+2. The stimulation matrix is created using the signal created at the beginning of the program. Examples of
+	a function creating such a matrix can be found in creatStimFingMat.m.
 3. If an input serial port is present, the program waits for a trigger to start the experiment.
 4. After the program starts, the logger logs the initial delay due to buffering and when each 
    output is stimulated. NOTE: the logger runs parralel to but independently from the VTS.
    However, the logger seems to be accurate enough.
+
+The important functions and modules are commented. Some old functions and modules can be found in the 
+'deprecated' map. 
 
 
