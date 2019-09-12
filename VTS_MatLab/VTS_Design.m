@@ -2,7 +2,7 @@ clear;clc
 
 % Fill in the subject number and log directory for logging. Then logging is
 % inititated
-subject = 'V8771';
+subject = 'TEST_Joni';
 logdir = 'C:\Users\mthio.LA020080\Documents\GitHub\vtstask\logfiles\';
 logfile = fopen(strcat(logdir, 'log_subject_', subject, '.txt'), 'a');
 logger(logfile, char(strcat('Initiate logging for subject', {' '}, subject))); 
@@ -13,7 +13,7 @@ s = daq.createSession('ni'); % Create session with NI devices
 
 % serial ports
 PORT_OUT = "COM5";
-PORT_IN = "COM8";
+PORT_IN = "COM8";  % check 'seriallist' 
 
 % DAQ devices. One daq device can hold 10 stimulators. If more than 10
 % stimulators are needed, use two DAQ devices. 
@@ -30,7 +30,8 @@ daq2 = 'cDAQ1mod2';
 nrOutputs = 5;
 amplitude = 2;
 
-frequency = 20;
+frequency = 30;
+
 frequency2 = 110; %Hz
 frequency3 = 190;
 
@@ -119,65 +120,65 @@ try
     % design. The matrix is generated using the 'createStimAllMat'
     % function. Logger logs when fingers are stimulated. 
     
-%     logger(logfile, 'INPUTS STIMULATE ALL:', 0);
-%     logvars(logfile, nrOutputs, amplitude, frequency, stimdur_all_on, stimdur_all_off, stimdur_total_all);
-%     
-%     stimAllMat = createStimAllMat(nrOutputs, signal_all, onsets);
-% 
-%     queueOutputData(s, stimAllMat)
-%     if sp_in ~=0
-%         fmri_trigger(sp_in, logfile, 'Start stimulating all outputs')
-%     end
-%     tic
-%     s.startBackground
-%     % Send trigger to serialport
-%     if sp_out ~= 0
-%         fprintf(sp_out, '%c', 20);
-%     end
-%     
-%     logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
-%     logall(logfile, onsets, stimdur_total_all, sp_out);
-%     if sp_in ~=0
-%         fmri_trigger(sp_in, logfile, 'End of stimulating all outputs')
-%         stop(s);
-%     else
-%         pause
-%     end
+    logger(logfile, 'INPUTS STIMULATE ALL:', 0);
+    logvars(logfile, nrOutputs, amplitude, frequency, stimdur_all_on, stimdur_all_off, stimdur_total_all);
+    
+    stimAllMat = createStimAllMat(nrOutputs, signal_all, onsets);
+
+    queueOutputData(s, stimAllMat)
+    if sp_in ~=0
+        fmri_trigger(sp_in, logfile, 'Start stimulating all outputs')
+    end
+    tic
+    s.startBackground
+    % Send trigger to serialport
+    if sp_out ~= 0
+        fprintf(sp_out, '%c', 20);
+    end
+    
+    logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
+    logall(logfile, onsets, stimdur_total_all, sp_out);
+    if sp_in ~=0
+        fmri_trigger(sp_in, logfile, 'End of stimulating all outputs')
+        stop(s);
+    else
+        pause
+    end
     % --- stimulate random #1---
     % Stimulate individual finger digits in pseudo-randomized order at 30
     % Hz. The stimulation matrix is created as 'randmat' using the 
     % 'createStimFingMat' function. Logger logs which finger is stimulated
     % and when. 
     
-    randmat = createStimFingMat(nrOutputs, signal_fing, orderlist, restdur, pTime);
-    logger(logfile, 'INPUTS STIMULATE IN RANDOM ORDER #1 :', 0)
-    logvars(logfile, nrOutputs, amplitude, frequency, stimdur_fing_on, stimdur_fing_off, ...
-        stimdur_total_fing, restdur, pDur, randlength);
+%     randmat = createStimFingMat(nrOutputs, signal_fing, orderlist, restdur, pTime);
+%     logger(logfile, 'INPUTS STIMULATE IN RANDOM ORDER #1 :', 0)
+%     logvars(logfile, nrOutputs, amplitude, frequency, stimdur_fing_on, stimdur_fing_off, ...
+%         stimdur_total_fing, restdur, pDur, randlength);
+%     
+%     queueOutputData(s, randmat)
+%     
+%     if sp_in ~=0
+%         fmri_trigger(sp_in, logfile, 'Start stimulating outputs in random order')
+%     end
+%     
+%     tic
+%     s.startBackground
+%     if sp_out ~= 0
+%         fprintf(sp_out, '%c', 20);
+%     end
+%     logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
+%     logfing(logfile, orderlist, restdur, pTime, stimdur_total_fing, sp_out);
+%     
+%     if sp_in ~=0
+%         fmri_trigger(sp_in, logfile, 'End of stimulating outputs in random order')
+%         stop(s);
+%     end
     
-    queueOutputData(s, randmat)
-    
-    if sp_in ~=0
-        fmri_trigger(sp_in, logfile, 'Start stimulating outputs in random order')
-    end
-    
-    tic
-    s.startBackground
-    if sp_out ~= 0
-        fprintf(sp_out, '%c', 20);
-    end
-    logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
-    logfing(logfile, orderlist, restdur, pTime, stimdur_total_fing, sp_out);
-    
-    if sp_in ~=0
-        fmri_trigger(sp_in, logfile, 'End of stimulating outputs in random order')
-        stop(s);
-    end
-    
-%     %% --- stimulate random #2---
-      % Stimulate individual finger digits in pseudo-randomized order at
-      % 110 Hz. The stimulation matrix is created as 'randmat' using the 
-      % 'createStimFingMat' function. Logger logs which finger is
-      % stimulated and when. 
+     % --- stimulate random #2---
+     % Stimulate individual finger digits in pseudo-randomized order at
+     % 110 Hz. The stimulation matrix is created as 'randmat' using the 
+     % 'createStimFingMat' function. Logger logs which finger is
+     % stimulated and when. 
       
 %     randmat = createStimFingMat(nrOutputs, signal_fing2, orderlist, restdur, pTime);
 %     logger(logfile, 'INPUTS STIMULATE IN RANDOM ORDER #2 :', 0)
@@ -200,22 +201,22 @@ try
 %         stop(s);
 %     end
 %     
-% %     %% --- stimulate random #3---
-        % Stimulate individual finger digits in pseudo-randomized order at
-        % 190 Hz. The stimulation matrix is created as 'randmat' using the 
-        % 'createStimFingMat' function. Logger logs which finger is
-        % stimulated and when.
-        
+%      %% --- stimulate random #3---
+%         % Stimulate individual finger digits in pseudo-randomized order at
+%         % 190 Hz. The stimulation matrix is created as 'randmat' using the 
+%         % 'createStimFingMat' function. Logger logs which finger is
+%         % stimulated and when.
+%         
 %     randmat = createStimFingMat(nrOutputs, signal_fing3, orderlist, restdur, pTime);
 %     logger(logfile, 'INPUTS STIMULATE IN RANDOM ORDER #3 :', 0)
 %     logvars(logfile, nrOutputs, amplitude, frequency3, stimdur_fing_on, stimdur_fing_off, ...
 %         stimdur_total_fing, restdur, pDur, randlength);
 %     
 %     queueOutputData(s, randmat)
-%     
 %     if sp_in ~=0
 %         fmri_trigger(sp_in, logfile, 'Start stimulating outputs in random order')
 %     end
+%     
 %     
 %     tic
 %     s.startBackground
@@ -226,7 +227,7 @@ try
 %         fmri_trigger(sp_in, logfile, 'End of stimulating outputs in random order')
 %         stop(s);
 %     end
-%     
+    
     % --- Close serial ports ---
     % Serial ports should be closed, otherwise it will not remain open and
     % the serialport cannot be registered again as 'sp_in' or 'sp_out'.
@@ -258,27 +259,3 @@ catch e
     fprintf(2, e.message);
 end
 
-function logvars(logfile, nrOutputs, amplitude, frequency, stimdur_on, stimdur_off, stimdur_total, restdur, pTime, reps)
-% Used for logging the parameters of each experiment. 
-
-if nargin < 8
-    fprintf(logfile, '\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n\n',...
-        'number of outputs: ', nrOutputs,...
-        'amplitude: ', amplitude, ...
-        'frequency: ', frequency, ...
-        'duration of stimulation ON in seconds: ', stimdur_on, ...
-        'duration of stimulation OFF in seconds: ', stimdur_off, ...
-        'total stimulation duration: ', stimdur_total);
-else
-    fprintf(logfile, '\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n\n',...
-        'number of outputs: ', nrOutputs,...
-        'amplitude: ', amplitude, ...
-        'frequency: ', frequency, ...
-        'duration of stimulation ON in seconds: ', stimdur_on, ...
-        'duration of stimulation OFF in seconds: ', stimdur_off, ...
-        'duration between blocks in seconds: ', restdur,...
-        'duration between stimulation in seconds: ', pTime,...
-        'total stimulation duration: ', stimdur_total, ... 
-        'number of repetitions: ', reps);
-end
-end
