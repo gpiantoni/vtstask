@@ -86,7 +86,7 @@ try
     % All fingers are stimulated at certain intervals. The matrix is generated 
     % using the 'createStimMat' function. Logger logs when fingers are stimulated. 
     
-    %logger(logfile, 'INPUTS STIMULATE:', 0);
+    logger(logfile, 'INPUTS STIMULATE:', 0);
     %logvars(logfile, nrOutputs);
     
     stimMat = createStimMat(nrOutputs, onsets, outputlist, frequency,... 
