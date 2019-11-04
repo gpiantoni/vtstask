@@ -1,0 +1,30 @@
+Specify the design of the VTS experiment whereby:
+ - onsets = list describing the onsets of stimulations
+ - outputlist = array of which outputs need to be used at each onset (if more than one output used per onset put a comma between and seperate via semicolon)
+ - amplitude = list describing the amplitude per onset
+ - frequency = list describing frequency per onset 
+ - ondur = on duration of vibration in a stimulus
+ - offdur = off duration between vibration in a stimulus
+ - stimdur = total duration of the whole stimulus 
+
+onsets 	| outputs| amplitude	| frequency     | ondur		|offdur		|stimdur
+1;      	1; 		2;				110;             0.5;       0.0;			0.5;
+2.5;        2; 		2;				110;             0.5;       0.0;			0.5;
+4;      	3; 		2;				110;             0.5;       0.0;			0.5;
+5.5;      	4; 		2;				110;             0.5;       0.0;			0.5;
+7;      	5; 		2;				110;             0.5;       0.0;			0.5;
+8.5;      	6; 		2;				110;             0.5;       0.0;			0.5;
+10;      	7; 		2;				110;             0.5;       0.0;			0.5;
+11.5;      	8; 		2;				110;             0.5;       0.0;			0.5;
+13;      	9; 		2;				110;             0.5;       0.0;			0.5;
+14.5;      	10; 	2;				110;             0.5;       0.0;			0.5;
+16;      	11; 	2;				110;             0.5;       0.0;			0.5;
+17.5;      	12; 	2;				110;             0.5;       0.0;			0.5;
+19;      	13; 	2;				110;             0.5;       0.0;			0.5;
+21.5;      	14; 	2;				110;             0.5;       0.0;			0.5;
+23;      	15; 	2;				110;             0.5;       0.0;			0.5;
+24.5;      	16; 	2;				110;             0.5;       0.0;			0.5;
+26;      	17; 	2;				110;             0.5;       0.0;			0.5;
+27.5;      	18; 	2;				110;             0.5;       0.0;			0.5;
+29;      	19; 	2;				110;             0.5;       0.0;			0.5;
+30.5;      	20; 	2;				110;            0.5;       0.0;             0.5;

@@ -1,7 +1,9 @@
 function logvars(logfile, nrOutputs, amplitude, frequency, stimdur_on, stimdur_off, stimdur_total, restdur, pTime, reps)
 % Used for logging the parameters of each experiment. 
 
-if nargin < 8
+if nargin == 2
+    fprintf(logfile, '\n%s: %f\n%s:','number of outputs: ', nrOutputs);
+elseif nargin < 8
     fprintf(logfile, '\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n%s: %f\n\n',...
         'number of outputs: ', nrOutputs,...
         'amplitude: ', amplitude, ...

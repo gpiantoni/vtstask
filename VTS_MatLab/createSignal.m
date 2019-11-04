@@ -9,7 +9,7 @@ function signal = createSignal(frequency, amplitude, on_duration, off_duration, 
 %                   off_duration = 0. 
 % - reps = how many times the on/off duration should be repeated. As an
 %           example, if you want a stimulus of 4 seconds where the stimulus
-%           is on for .4s and off for .1 you need reps = 8. 
+%           is on for .4s and off for .1s you need reps = 8. 
 
 switch nargin
     case 3
@@ -18,6 +18,10 @@ switch nargin
     case 4
         reps = 1;
 end
+
+
+
+
 signal = [];
 values = linspace(0,2*pi * frequency *on_duration,...
     on_duration*1000)';
@@ -27,5 +31,4 @@ signal_off = zeros(off_duration*1000, 1);
 for rep = 1:reps
         signal = [signal;signal_on;signal_off];
 end
-
 end

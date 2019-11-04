@@ -20,17 +20,16 @@ PORT_IN = "COM8";  % check 'seriallist'
 daq1 = 'cDAQ1mod1';
 daq2 = 'cDAQ1mod2';
 
+nrOutputs = 5;
+amplitude = 2;
+frequency = 30; %adjust per experiment
+
 %% Create output signal
 % This part of the module creates the output signal. First, specify the
 % number of outputs, amplitude and frequency. Then, determine the
 % stimulation time and pause time. These variables are then used to create
 % a single instance of the signal. This is subsequently used in generating
 % the stimulation matrices.
-
-nrOutputs = 5;
-amplitude = 2;
-
-frequency = 30; %adjust
 
 % stimulation variables seperate finger stimulation
 stimdur_fing_on = .4;
@@ -47,8 +46,7 @@ reps_fing = stimdur_total_fing/(stimdur_fing_on+stimdur_fing_off) ;
 signal_fing = createSignal(frequency, amplitude, stimdur_fing_on, stimdur_fing_off, reps_fing);
 
 %% Load files for experiment
-% Here the files are loaded that are used in the experiment. The first file
-% contains the stimulation times of the HRF experiment. The second file
+% Here the file is loaded that is used in the experiment.The file
 % contains the pseudo-randomized order of the single finger digit
 % experiments.
 
