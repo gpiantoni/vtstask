@@ -86,15 +86,15 @@ try
     % All fingers are stimulated at certain intervals. The matrix is generated 
     % using the 'createStimMat' function. Logger logs when fingers are stimulated. 
     
-    logger(logfile, 'INPUTS STIMULATE:', 0);
+    %logger(logfile, 'INPUTS STIMULATE:', 0);
     %logvars(logfile, nrOutputs);
-
-%CATCH ONDUR OFFDUR DIFFERENTIATION
-    %stimMat = createStimMat(nrOutputs, onsets, outputlist, frequency,... 
-    %amplitude, ondur, offdur, stimdur);
-
-    stimMat = createStimMatOLD(nrOutputs, onsets, outputlist, frequency,... 
+    
+    stimMat = createStimMat(nrOutputs, onsets, outputlist, frequency,... 
     amplitude, ondur, offdur, stimdur);
+    
+    %OLD STIMMAT
+    %stimMat = createStimMatOLD(nrOutputs, onsets, outputlist, frequency,... 
+    %amplitude, ondur, offdur, stimdur);
 
     stimMat2 = stimMat(:, 1:nrOutputs2);
     if nrOutputs > 10
@@ -120,6 +120,7 @@ try
     
     logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
     loglr(logfile, onsets, outputlist, sp_out);
+    
     if sp_in ~=0
         fmri_trigger(sp_in, logfile, 'End of stimulating all outputs')
         stop(s);
