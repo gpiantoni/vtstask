@@ -31,7 +31,6 @@ nrOutputs = 5;
 amplitude = 2;
 
 frequency = 30;
-
 frequency2 = 110; %Hz
 frequency3 = 190;
 

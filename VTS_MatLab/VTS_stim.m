@@ -1,8 +1,12 @@
 clear;clc
+%SERIALPORTS
 %fclose(instrfind): closing all serial ports manually 
+%instrfind: see which serial ports are closed and open
+%seriallist: see all serialports that are there
+
 % Fill in the subject number and log directory for logging. Then logging is
 % inititated
-subject = 'dryRun_29_10';
+subject = 'TEST_ecog';
 logdir = 'C:\Users\mthio.LA020080\Documents\GitHub\vtstask\logfiles\';
 logfile = fopen(strcat(logdir, 'log_subject_', subject, '.txt'), 'a');
 logger(logfile, char(strcat('Initiate logging for subject', {' '}, subject))); 
@@ -19,8 +23,10 @@ devices = daq.getDevices;  % register DAQ devices
 s = daq.createSession('ni'); % Create session with NI devices
 
 % serial ports
-PORT_OUT = "COM5"; % only for ECoG
-PORT_IN = "COM8";  % check 'seriallist' 
+PORT_OUT_ECOG = "COM10"; % only for ECoG
+begin_task = 100;
+
+PORT_IN_MRI = "COM8";  % only for fMRI 
 
 % DAQ devices. One daq device can hold 10 stimulators. If more than 10
 % stimulators are needed, use two DAQ devices. 
@@ -31,12 +37,11 @@ daq2 = 'cDAQ1mod2';
 % Here the file is loaded that is used in the experiment. values are
 % seperated by semicolons, top of 10 lines of the file contain comments. 
 
-fname = 'design_rand.txt';
+fname = 'design_ecog_5fingers30.txt';
 file = fopen(fname);
 cells = textscan(file, '%f %s %d %d %f %f %f', ...
     'delimiter', ';', 'headerlines', 10);
 
-%variables are loaded out of the file
 onsets = cell2mat(cells(1))';
 outputlist = cells{2};
 amplitude = cell2mat(cells(3))';
@@ -44,14 +49,13 @@ frequency = cell2mat(cells(4))';
 ondur = cell2mat(cells(5))';
 offdur = cell2mat(cells(6))';
 stimdur = cell2mat(cells(7))';
+last_stimdur = stimdur(length(stimdur));
 fclose(file);
 
-%% log files for experiments
-%can be used to load in .txt for fixed onsets and outputs needed
-%for stimulation, variables are now hardcoded 
-
+%% log files for experiment
  fprintf(logfile, '\n%s: %s\n', ... 
      'design filename: ', fname); 
+ 
 %% add all the channels to the session
 % Add all the stimulators (channels) to the seession, otherwise they cannot
 % be used. Use the DAQ device that was registered.
@@ -62,21 +66,21 @@ end
 
 %% --- Open serial ports if available ---
 try
-    sp_out = serial(PORT_OUT);
+    sp_out = serial(PORT_OUT_ECOG);
     fopen(sp_out);
-    disp(strcat('opening serial port:', {' '}, PORT_OUT));
+    disp(strcat('opening serial port:', {' '}, PORT_OUT_ECOG));
 catch ME
-    warning('no output serial port found. output serial port set to 0');
+    warning('no ecog output serial port found. output serial port set to 0');
     sp_out = 0;
 end
 
 try
-    sp_in = serial(PORT_IN);
+    sp_in = serial(PORT_IN_FMRI);
     fopen(sp_in);
-    disp(strcat('opening serial port:', {' '}, PORT_IN));
+    disp(strcat('opening serial port:', {' '}, PORT_IN_FMRI));
     sp_in.Timeout = inf;
 catch ME
-    warning('no input serial port found. input serial port set to 0');
+    warning('no mri input serial port found. input serial port set to 0');
     sp_in = 0;
 end
 
@@ -84,23 +88,17 @@ end
 try
 %% --- stimulate all ---
     % All fingers are stimulated at certain intervals. The matrix is generated 
-    % using the 'createStimMat' function. Logger logs when fingers are stimulated. 
-    
-    logger(logfile, 'INPUTS STIMULATE:', 0);
-    %logvars(logfile, nrOutputs);
+    % using the 'createStimMat' function. Logger logs when fingers are (supposed to be) 
+    % stimulated. 
     
     stimMat = createStimMat(nrOutputs, onsets, outputlist, frequency,... 
     amplitude, ondur, offdur, stimdur);
     
-    %OLD STIMMAT
-    %stimMat = createStimMatOLD(nrOutputs, onsets, outputlist, frequency,... 
-    %amplitude, ondur, offdur, stimdur);
 
     stimMat2 = stimMat(:, 1:nrOutputs2);
     if nrOutputs > 10
         stimMat1 = stimMat(:, 11:nrOutputs);
     end
-
 
     if nrOutputs > 10
         queueOutputData(s, [stimMat2, stimMat1])
@@ -111,23 +109,32 @@ try
     if sp_in ~=0
         fmri_trigger(sp_in, logfile, 'Start stimulating all outputs')
     end
+    
+    disp("task start")
     tic
     s.startBackground
-    % Send trigger to serialport
-    if sp_out ~= 0
-        fprintf(sp_out, '%c', 20);
-    end
+    start_time_delay = num2str(toc); 
     
-    logger(logfile, char(strcat('start time delay is', {' '}, num2str(toc))))
-    loglr(logfile, onsets, outputlist, sp_out);
+    %use log to test new designs...
+    %loglr(logfile, onsets, outputlist, sp_out);
+    
+    % Send trigger to ecog serial port for start experiment
+    if sp_out ~= 0
+        %disp(begin_task)
+        fprintf(sp_out, '%c', begin_task);
+        ecog_trigger(onsets, outputlist, last_stimdur, sp_out);
+    end
     
     if sp_in ~=0
         fmri_trigger(sp_in, logfile, 'End of stimulating all outputs')
         stop(s);
     else
+        disp("press enter to close serial port")
+        stop(s);
         pause
     end
     
+     logger(logfile, char(strcat('End of task, start time delay was', {' '}, num2str(start_time_delay))))
         % --- Close serial ports ---
     % Serial ports should be closed, otherwise it will not remain open and
     % the serialport cannot be registered again as 'sp_in' or 'sp_out'.
@@ -135,26 +142,29 @@ try
     % are still open, type in 'instrfind' in the cmd line. 
     
     if sp_out ~= 0
-        disp(strcat('closing serial port:',{' '}, PORT_OUT));
+        disp(strcat('closing serial port:',{' '}, PORT_OUT_ECOG));
         fclose(sp_out);
     end
     
     if sp_in ~= 0
         fclose(sp_in);
-        disp(strcat('closing serial port:',{' '}, PORT_IN));
+        disp(strcat('closing serial port:',{' '}, PORT_IN_MRI));
     end
     fclose(logfile);
     
 catch e
     if sp_out ~= 0
         fclose(sp_out);
-        disp(strcat('closing serial port:',{' '}, PORT_OUT));
+        disp(strcat('closing serial port:',{' '}, PORT_OUT_ECOG));
     end
     
     if sp_in ~= 0
         fclose(sp_in);
-        disp(strcat('closing serial port:',{' '}, PORT_IN));
+        disp(strcat('closing serial port:',{' '}, PORT_IN_MRI));
     end
     fclose(logfile);
     fprintf(2, e.message);
 end
+
+
+

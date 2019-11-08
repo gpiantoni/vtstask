@@ -7,6 +7,8 @@ end
 disp('Waiting for trigger from scanner...')
 
 while 1
+    %To know the trigger number the serialport is sending
+    %disp(fread(serialport, 1))
     if fread(serialport, 1) == 49
         logger(logfile, message);
         break
