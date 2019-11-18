@@ -10,6 +10,7 @@ while 1
     %To know the trigger number the serialport is sending
     %disp(fread(serialport, 1))
     if fread(serialport, 1) == 49
+        disp("MR trigger received")
         logger(logfile, message);
         break
     end
