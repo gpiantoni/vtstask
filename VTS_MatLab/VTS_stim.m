@@ -7,7 +7,7 @@ clear;clc
 %% Variables 
 
 % Fill subject number and log directory. 
-subject = 'TEST_trigger_test';
+subject = 'TEST_Dryrun_19_11';
 logdir = 'C:\Users\mthio.LA020080\Documents\GitHub\vtstask\logfiles\';
 logfile = fopen(strcat(logdir, 'log_subject_', subject, '.txt'), 'a');
 logger(logfile, char(strcat('Initiate logging for subject', {' '}, subject))); 
@@ -27,7 +27,7 @@ s = daq.createSession('ni'); % Create session with NI devices
 PORT_OUT_ECOG = "COM10"; % only for ECoG
 begin_task = 100;
 
-PORT_IN_MR = "COM8";  % only for MR
+PORT_IN_MR = seriallist;  % only for MR
 
 % One daq device can hold 10 stimulators. If more than 10
 % stimulators are needed, use two DAQ devices. 
@@ -38,7 +38,7 @@ daq1 = 'cDAQ1mod1';
 % File with experiment design loaded. Values are seperated by semicolons, 
 % top of 10 lines of the file contain comments. 
 
-fname = 'design_temporal.txt';
+fname = 'design_rand.txt';
 file = fopen(fname);
 cells = textscan(file, '%f %s %d %d %f %f %f', ...
     'delimiter', ';', 'headerlines', 10);
@@ -112,7 +112,6 @@ try
         pause;
     end
     
-    
     disp("TASK STARTED")
     task_start = tic;
     delay = tic;
@@ -131,7 +130,7 @@ try
     task_busy = true;
     if sp_in ~=0
         while task_busy
-            if toc(task_start) >= onsets(length(onsets)) + stimdur(length(stimdur))
+            if toc(task_start) >= onsets(length(onsets)) + stimdur(length(stimdur)) + 2
             task_busy = ~task_busy;
             fmri_trigger(sp_in, logfile, 'End of stimulating all outputs')
             stop(s);
