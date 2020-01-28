@@ -10,7 +10,7 @@ will have to be specified:
 		- devices: the NIDAQ devices used to control the stimulators
 		- nrOutputs: number of stimulators used in the experiment
 		- PORT: the serial port to get/send signals through. If not available it will 
-			also run just fine.
+			also run just fine. You can start the experiment manually.
 		- daq: specify the name daq device(s)
 
 	* For the logger:
@@ -32,7 +32,9 @@ will have to be specified:
 
 5. It will run the experiments, explained below.
 
-6. After the experiments are run, it will close the serial port.
+6. Thereafter it logs the start time delay (not reliable)
+
+7. After the experiments are run, it will close the serial port.
 
 All experiments go through the same process:
 
@@ -40,9 +42,8 @@ All experiments go through the same process:
 2. With the parameters specified in your experiment design .txt file a stimulation matrix
    will be created using the file createStimMat.m.  
 3. If an input serial port is present, the program waits for a trigger to start the experiment.
-4. After the program starts, the logger logs the initial delay due to buffering and when each\which 
-   output is stimulated. NOTE: the logger runs parallel to but independently from the VTS.
-   However, the logger seems to be accurate enough.
+4. After the program starts, the start time delay is saved (not reliable). After the experiment is done it is logged. 
 
 The important functions and modules are commented. Some old functions and modules can be found in the 
-'Old' map. The previous version of the VTS build by Martijn Thio can be found in the 'Martijn' map.  
+'Old' map. The previous version of the VTS build by Martijn Thio can be found in the 'Martijn' map. In the ecog map you find 
+3 experimental designs for ecog and a trigger test script. 

@@ -1,12 +1,12 @@
 clear;clc
 %% NOTES on SERIALPORTS 
 %fclose(instrfind): closing all serial ports manually 
-%instrfind: see which serial ports are closed and open
-%seriallist: see all serialports that are connected
-
+%instrfind: see which  serial ports are closed and open
+%seriallist: see all serial ports that are connected
+addpath C:\Users\mthio.LA020080\Documents\GitHub\vtstask\VTS_MatLab\low-latency-startForeground\
 %% Variables 
 % Fill subject number and log directory. 
-subject = 'VTS_demo';
+subject = 'VTS22_01_2020';
 logdir = 'C:\Users\mthio.LA020080\Documents\GitHub\vtstask\logfiles\';
 logfile = fopen(strcat(logdir, 'log_subject_', subject, '.txt'), 'a');
 logger(logfile, char(strcat('Initiate logging for subject', {' '}, subject))); 
@@ -20,7 +20,7 @@ nrOutputs2 = 10;
 
 % register the amplifier
 devices = daq.getDevices;  % register DAQ devices
-s = daq.createSession('ni'); % Create session with NI devices
+NiDaqDevice = daq.createSession('ni'); % Create session with NI devices
 
 PORT_IN_MR = seriallist;  % only for MR
 
@@ -33,7 +33,7 @@ daq1 = 'cDAQ1mod1';
 % File with experiment design loaded. Values are seperated by semicolons, 
 % top of 10 lines of the file contain comments. 
 
-fname = 'design_pretest.txt';
+fname = 'design_hrf.txt';
 file = fopen(fname);
 cells = textscan(file, '%f %s %d %d %f %f %f', ...
     'delimiter', ';', 'headerlines', 10);
@@ -55,13 +55,12 @@ fclose(file);
  
 %% add all the channels to the session
 
-addChannels(s, nrOutputs2, daq2);
+addChannels(NiDaqDevice, nrOutputs2, daq2);
 if nrOutputs > 10
-addChannels(s, nrOutputs1, daq1);
+    addChannels(NiDaqDevice, nrOutputs1, daq1);
 end
 
 %% --- Open serial ports if available ---
-
 try
     sp_in = serial(PORT_IN_MR);
     fopen(sp_in);
@@ -79,18 +78,22 @@ try
     % and actual stimulation is logged
     
     stimMat = createStimMat(nrOutputs, onsets, outputlist, frequency,... 
-    amplitude, ondur, offdur, stimdur);
+    amplitude, ondur, offdur, stimdur)';
 
-    stimMat2 = stimMat(:, 1:nrOutputs2);
-    if nrOutputs > 10
-        stimMat1 = stimMat(:, 11:nrOutputs);
-    end
+    
+    %%%%%%% CUSTOM MATLAB CODE TO REPLACE s.startBackground %%%%%%% 
+    % create separate handles for analog lines
+    % NOTE run maybe not for every tactile stimulus?
+    aoCh(1) = NiDaqDevice.Channels(1);
 
-    if nrOutputs > 10
-        queueOutputData(s, [stimMat2, stimMat1])
-    else
-        queueOutputData(s, stimMat2)
-    end
+        % create separate handles for analog and digital lines
+        aoTaskHandle(1) = aoCh(1).TaskHandle;
+
+        % Configure handles (rate, number of scans)
+        NI_DAQmxCfgSampClkTiming(aoTaskHandle(1), NiDaqDevice.Rate, size(stimMat', 1));
+
+        % queue output data
+        NI_DAQmxWriteAnalogF64(aoTaskHandle(1), stimMat');
     
     if sp_in ~=0
         fmri_trigger(sp_in, logfile, 'Start stimulating all outputs')
@@ -101,13 +104,21 @@ try
     
     disp("TASK STARTED")
     task_start = tic;
-    delay = tic;
-    s.startBackground
-    start_time_delay = num2str(toc(delay)); 
+    
+        % start the task of outputting either signal
+        NI_DAQmxStartTask(aoTaskHandle(1));
+
+        % wait until signal generation is finished
+        % chech whether 10 ms works with your system
+        NI_DAQmxWaitUntilTaskDone(aoTaskHandle(1), 1000);
+        disp(toc(task_start))
+        % stop the task
+        NI_DAQmxStopTask(aoTaskHandle(1));
+    %end
+    %%%%%%% %%%%%%% %%%%%%% %%%%%%% %%%%%%% %%%%%%% %%%%%%% %%%%%%%
     
     %use log to test new  designs...
     %loglr(logfile, onsets, outputlist, sp_out);
-    
     
     task_busy = true;
     if sp_in ~=0
@@ -115,26 +126,24 @@ try
             if toc(task_start) >= onsets(length(onsets)) + stimdur(length(stimdur)) + 2
             task_busy = ~task_busy;
             fmri_trigger(sp_in, logfile, 'End of stimulating all outputs')
-            stop(s);
             end
         end
     end
     
     %if no seriallports have been found and task was started manually
-    if sp_in == 0 
+    if sp_in == 0 && sp_out == 0
         while task_busy
             if toc(task_start) >= onsets(length(onsets)) + stimdur(length(stimdur)) + 2 %arbitrary number for start time delay
                 disp(toc(task_start))
                 task_busy = ~task_busy;
                 disp('End of stimulation, press any key to continue')
                 pause
-                stop(s) 
             end
         end
     end
     
     %log start time delay
-     logger(logfile, char(strcat('Start time delay was', {' '}, num2str(start_time_delay))))
+     %logger(logfile, char(strcat('Start time delay was', {' '}, num2str(start_time_delay))))
      
     %% --- Close serial ports ---
     % Serial ports should be closed, otherwise it will not remain open and
@@ -147,7 +156,7 @@ try
     end
     fclose(logfile);
     
-catch e 
+catch e    
     if sp_in ~= 0
         fclose(sp_in);
         disp(strcat('closing serial port:',{' '}, PORT_IN_MR));

@@ -1,4 +1,4 @@
-fname = 'design_ecog_5fingers30.txt';
+fname = 'design_ecog_pretest.txt';
 file = fopen(fname);
 cells = textscan(file, '%f %s %d %d %f %f %f', ...
     'delimiter', ';', 'headerlines', 10);
@@ -8,7 +8,7 @@ stimdur = cell2mat(cells(7))';
 last_stimdur = stimdur(length(stimdur));
 fclose(file);
 
-PORT_OUT_ECOG = "COM10"; 
+PORT_OUT_ECOG = "COM13"; 
 
 sp_out = serial(PORT_OUT_ECOG);
 fopen(sp_out);
